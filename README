@@ -1,0 +1,35 @@
+Gotify Hook Plugin for Opencode
+================================
+
+A plugin that sends notifications to Gotify when important events occur
+in Opencode.
+
+Setup
+-----
+Set the following environment variables:
+
+  GOTIFY_URL   - Your Gotify server URL (e.g., https://gotify.example.com/message)
+  GOTIFY_TOKEN - Your Gotify application token
+
+Events
+-----
+The plugin sends notifications for these events:
+  - question.asked
+  - question.rejected
+  - permission.asked
+  - session.error
+  - session.deleted
+  - session.diff
+  - session.created
+  - session.idle
+  - worktree.failed
+  - mcp.browser.open.failed
+  - pty.exited
+  - vcs.branch.updated
+
+Priority
+--------
+Events are assigned priorities based on urgency:
+  - High (7): session.error, worktree.failed, mcp.browser.open.failed, pty.exited
+  - Medium (5): question.asked, permission.asked, session.deleted
+  - Low (3): all other events
