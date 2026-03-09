@@ -66,7 +66,7 @@ function getMessage(event: Event): string {
 
 function getPriority(eventType: Event["type"]): number {
 	const highPriority = ["session.error", "worktree.failed", "mcp.browser.open.failed", "pty.exited"]
-	const mediumPriority = ["question.asked", "permission.asked", "session.deleted"]
+	const mediumPriority = ["question.asked", "permission.asked", "session.deleted", "session.idle"]
 
 	if (highPriority.includes(eventType)) return 7
 	if (mediumPriority.includes(eventType)) return 5
@@ -76,6 +76,8 @@ function getPriority(eventType: Event["type"]): number {
 export const GotifyHookPlugin: Plugin = async ({ client }) => {
 	const GOTIFY_URL = process.env.GOTIFY_URL
 	const GOTIFY_TOKEN = process.env.GOTIFY_TOKEN
+	const parsedMinPriority = parseInt(process.env.GOTIFY_MIN_PRIORITY || "5", 10)
+	const GOTIFY_MIN_PRIORITY = isNaN(parsedMinPriority) ? 5 : parsedMinPriority
 
 	return {
 		event: async ({ event }) => {
@@ -92,6 +94,16 @@ export const GotifyHookPlugin: Plugin = async ({ client }) => {
 			if (!ATTENTION_EVENTS.includes(event.type)) return
 
 			const priority = getPriority(event.type)
+			if (priority < GOTIFY_MIN_PRIORITY) {
+				await client.app.log({
+					body: {
+						service: "gotify-plugin",
+						level: "info",
+						message: `Skipping notification for ${event.type} (priority ${priority} < min ${GOTIFY_MIN_PRIORITY})`
+					}
+				})
+				return
+			}
 
 			try {
 				await fetch(GOTIFY_URL, {
